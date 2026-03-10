@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dubai Real Estate Intelligence Dashboard — March 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<style>
+  :root {
+    --bg-primary: #0a0a0f;
+    --bg-panel: #1a1a2e;
+    --bg-panel-alt: #12121f;
+    --bg-card: #16213e;
+    --accent-blue: #3b82f6;
+    --accent-amber: #f59e0b;
+    --accent-green: #10b981;
+    --accent-red: #ef4444;
+    --accent-purple: #8b5cf6;
+    --accent-cyan: #06b6d4;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #475569;
+    --border: rgba(59, 130, 246, 0.15);
+    --border-hover: rgba(59, 130, 246, 0.4);
+    --glow-blue: 0 0 20px rgba(59, 130, 246, 0.3);
+    --glow-amber: 0 0 20px rgba(245, 158, 11, 0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Animated background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1600px; margin: 0 auto; padding: 0 16px; position: relative; z-index: 1; }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, rgba(26,26,46,0.95) 0%, rgba(10,10,15,0.98) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+  }
+  .header-inner {
+    max-width: 1600px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    gap: 12px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: var(--glow-blue);
+    flex-shrink: 0;
+  }
+  .logo-text { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; white-space: nowrap; }
+  .logo-text span { color: var(--accent-blue); }
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.3);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--accent-green);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .live-dot {
+    width: 6px; height: 6px;
+    background: var(--accent-green);
+    border-radius: 50%;
+    animation: pulse-green 1.5s infinite;
+  }
+  @keyframes pulse-green {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.4); }
+  }
+  .header-date { font-size: 0.78rem; color: var(--text-secondary); white-space: nowrap; }
+
+  /* ── Sentiment Banner ── */
+  .sentiment-banner {
+    background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(59,130,246,0.08) 50%, rgba(245,158,11,0.08) 100%);
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    position: relative;
+    overflow: hidden;
+  }
+  .sentiment-banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(16,185,129,0.05), transparent);
+    animation: shimmer 3s infinite;
+  }
+  @keyframes shimmer { to { left: 200%; } }
+
+  .sentiment-label {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--accent-green);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px rgba(16,185,129,0.5);
+    white-space: nowrap;
+  }
+  .sentiment-arrow { font-size: 1.6rem; color: var(--accent-green); }
+  .sentiment-text { font-size: 0.82rem; color: var(--text-secondary); flex: 1; min-width: 200px; }
+  .sentiment-text strong { color: var(--text-primary); }
+  .sentiment-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sentiment-badge {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .badge-green { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: var(--accent-green); }
+  .badge-blue { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: var(--accent-blue); }
+  .badge-amber { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: var(--accent-amber); }
+
+  /* ── Section titles ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+  }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+    min-width: 20px;
+  }
+  .section-tag {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .tag-blue { background: rgba(59,130,246,0.1); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.2); }
+  .tag-amber { background: rgba(245,158,11,0.1); color: var(--accent-amber); border: 1px solid rgba(245,158,11,0.2); }
+  .tag-red { background: rgba(239,68,68,0.1); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.2); }
+  .tag-green { background: rgba(16,185,129,0.1); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.2); }
+
+  /* ── KPI Grid ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.2s;
+  }
+  .kpi-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+  }
+  .kpi-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; margin-bottom: 6px; }
+  .kpi-value { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.5px; line-height: 1.1; }
+  .kpi-value.blue { color: var(--accent-blue); }
+  .kpi-value.amber { color: var(--accent-amber); }
+  .kpi-value.green { color: var(--accent-green); }
+  .kpi-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+  .kpi-change { display: flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 0.72rem; font-weight: 600; }
+  .change-up { color: var(--accent-green); }
+  .change-down { color: var(--accent-red); }
+  .kpi-icon { position: absolute; right: 14px; top: 14px; font-size: 1.4rem; opacity: 0.15; }
+
+  /* ── Panels ── */
+  .panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .panel:hover { border-color: var(--border-hover); }
+  .panel-glow-blue::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; right: -60px;
+    width: 160px; height: 160px;
+    background: radial-gradient(circle, rgba(59,130,246,0.08), transparent 70%);
+    pointer-events: none;
+  }
+  .panel-glow-amber::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; right: -60px;
+    width: 160px; height: 160px;
+    background: radial-gradient(circle, rgba(245,158,11,0.08), transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ── Grid Layouts ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-bottom: 24px; }
+
+  .section-gap { margin-bottom: 24px; }
+
+  /* Chart containers */
+  .chart-container { position: relative; }
+  .chart-container canvas { max-height: 100%; }
+
+  /* ── War Event Label ── */
+  .war-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    color: var(--accent-red);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Distress Cards ── */
+  .distress-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .distress-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.2s;
+    cursor: pointer;
+  }
+  .distress-card:hover { border-color: rgba(239,68,68,0.4); transform: translateY(-2px); }
+  .distress-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .card-distress::before { background: linear-gradient(90deg, var(--accent-red), #ff6b6b); }
+  .card-motivated::before { background: linear-gradient(90deg, var(--accent-amber), #fbbf24); }
+  .card-below::before { background: linear-gradient(90deg, var(--accent-purple), #a78bfa); }
+
+  .distress-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.63rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+  }
+  .tag-distress { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.35); color: var(--accent-red); }
+  .tag-motivated { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.35); color: var(--accent-amber); }
+  .tag-below-mkt { background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.35); color: var(--accent-purple); }
+  .blink { animation: blink 1.2s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .dc-prop-type { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .dc-name { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 3px 0 8px; }
+  .dc-location { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 10px; display: flex; align-items: center; gap: 4px; }
+
+  .dc-prices { display: flex; align-items: flex-end; gap: 10px; margin-bottom: 10px; }
+  .dc-listed { font-size: 1.15rem; font-weight: 800; color: var(--accent-green); }
+  .dc-market { font-size: 0.8rem; color: var(--text-muted); text-decoration: line-through; }
+  .dc-discount {
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: var(--accent-red);
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 6px;
+  }
+
+  .dc-specs { display: flex; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+  .dc-spec { font-size: 0.72rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
+
+  .dc-meta { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+  .dc-developer { font-size: 0.7rem; color: var(--text-muted); }
+  .dc-developer strong { color: var(--accent-blue); }
+  .dc-payment {
+    font-size: 0.65rem;
+    background: rgba(59,130,246,0.1);
+    border: 1px solid rgba(59,130,246,0.2);
+    color: var(--accent-blue);
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .urgency-bar {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .urgency-text { font-size: 0.68rem; color: var(--accent-amber); font-weight: 600; }
+
+  /* ── Data Sources ── */
+  .data-sources {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .data-source-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .ds-badge {
+    font-size: 0.62rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    border: 1px solid;
+  }
+  .ds-dld { background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.25); color: #60a5fa; }
+  .ds-dxb { background: rgba(139,92,246,0.08); border-color: rgba(139,92,246,0.25); color: #a78bfa; }
+  .ds-bayut { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.25); color: #fbbf24; }
+  .ds-pf { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.25); color: #34d399; }
+  .ds-reidin { background: rgba(6,182,212,0.08); border-color: rgba(6,182,212,0.25); color: #22d3ee; }
+
+  /* ── Footer ── */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 20px 16px;
+    margin-top: 32px;
+  }
+  .footer-inner {
+    max-width: 1600px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .footer-text { font-size: 0.75rem; color: var(--text-muted); }
+  .footer-text strong { color: var(--text-secondary); }
+
+  /* Ticker */
+  .ticker-wrap {
+    background: rgba(26,26,46,0.8);
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    height: 32px;
+    display: flex;
+    align-items: center;
+  }
+  .ticker-label {
+    background: var(--accent-blue);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0 12px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    flex-shrink: 0;
+    z-index: 2;
+  }
+  .ticker-track {
+    display: flex;
+    animation: ticker 50s linear infinite;
+    white-space: nowrap;
+    will-change: transform;
+  }
+  @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .ticker-item {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+  }
+  .ticker-item .up { color: var(--accent-green); font-weight: 700; }
+  .ticker-item .dn { color: var(--accent-red); font-weight: 700; }
+  .ticker-sep { color: var(--text-muted); opacity: 0.3; }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .grid-2, .grid-3, .grid-2-1, .grid-1-2 { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .kpi-value { font-size: 1.2rem; }
+    .header-date { display: none; }
+    .distress-grid { grid-template-columns: 1fr; }
+    .section-title { font-size: 0.85rem; }
+  }
+  @media (max-width: 380px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg-primary); }
+  ::-webkit-scrollbar-thumb { background: var(--accent-blue); border-radius: 3px; }
+
+  /* Number counter animation */
+  .count-up { display: inline-block; }
+
+  /* Tooltip override */
+  .chartjs-tooltip {
+    background: rgba(26,26,46,0.95) !important;
+    border: 1px solid rgba(59,130,246,0.3) !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+  }
+
+  main { padding: 20px 16px; max-width: 1600px; margin: 0 auto; }
+
+  /* Phase indicator */
+  .phase-indicator {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .phase-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+  }
+  .phase-dot {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">🏙</div>
+      <div class="logo-text">Dubai <span>RE</span> Intelligence</div>
+    </div>
+    <div class="header-meta">
+      <div class="live-badge"><div class="live-dot"></div> Live Feed</div>
+      <div class="header-date">March 2026 · DLD Data</div>
+    </div>
+  </div>
+</header>
+
+<!-- Ticker -->
+<div class="ticker-wrap">
+  <div class="ticker-label">Market</div>
+  <div style="overflow:hidden;flex:1">
+    <div class="ticker-track" id="ticker">
+      <div class="ticker-item">Dubai Marina Avg/sqft<span class="up">AED 2,847 ▲2.3%</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">Downtown Dubai<span class="up">AED 3,412 ▲1.8%</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">Business Bay<span class="up">AED 2,241 ▲3.1%</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">JVC<span class="up">AED 1,187 ▲4.2%</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">Palm Jumeirah<span class="up">AED 4,890 ▲1.4%</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">MBR City<span class="up">AED 2,650 ▲5.7%</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">Off-Plan Share<span class="up">67.4% ▲</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">Total YTD Transactions<span class="up">24,817 ▲18.3%</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">YTD Sales Value<span class="up">AED 68.2B ▲22.1%</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">AED/USD<span class="up">3.6725 ◼ Stable</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">Dubai Marina Avg/sqft<span class="up">AED 2,847 ▲2.3%</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">Downtown Dubai<span class="up">AED 3,412 ▲1.8%</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">Business Bay<span class="up">AED 2,241 ▲3.1%</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">JVC<span class="up">AED 1,187 ▲4.2%</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">Palm Jumeirah<span class="up">AED 4,890 ▲1.4%</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">MBR City<span class="up">AED 2,650 ▲5.7%</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">Off-Plan Share<span class="up">67.4% ▲</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">Total YTD Transactions<span class="up">24,817 ▲18.3%</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">YTD Sales Value<span class="up">AED 68.2B ▲22.1%</span></div>
+      <div class="ticker-sep">|</div>
+      <div class="ticker-item">AED/USD<span class="up">3.6725 ◼ Stable</span></div>
+    </div>
+  </div>
+</div>
+
+<main>
+
+  <!-- Sentiment Banner -->
+  <div class="sentiment-banner">
+    <div class="sentiment-arrow">▲</div>
+    <div class="sentiment-label">BULLISH</div>
+    <div class="sentiment-text">
+      <strong>Post-Iran War Capital Flight fuelling record Dubai inflows.</strong>
+      Regional instability following the June 2025 Iran-Israel escalation and US strikes has accelerated safe-haven flows into UAE real estate. AED stability, zero capital gains tax, and Golden Visa incentives are driving record foreign investor demand — transactions up <strong>+34% YoY</strong> since Q3 2025.
+    </div>
+    <div class="sentiment-badges">
+      <span class="sentiment-badge badge-green">Safe Haven ✓</span>
+      <span class="sentiment-badge badge-blue">AED Stable</span>
+      <span class="sentiment-badge badge-amber">Capital Flight ▲</span>
+      <span class="sentiment-badge badge-green">Golden Visa</span>
+    </div>
+  </div>
+
+  <!-- KPI Section -->
+  <div class="section-header">
+    <div class="section-title">Live Market Overview</div>
+    <div class="section-line"></div>
+    <span class="section-tag tag-blue">March 2026</span>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon">📊</div>
+      <div class="kpi-label">Mar Transactions (MTD)</div>
+      <div class="kpi-value blue">9,247</div>
+      <div class="kpi-sub">Units sold — Month to Date</div>
+      <div class="kpi-change change-up">▲ 28.4% vs Mar 2025</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">💰</div>
+      <div class="kpi-label">YTD Total Sales Value</div>
+      <div class="kpi-value amber">AED 68.2B</div>
+      <div class="kpi-sub">Jan – Mar 2026</div>
+      <div class="kpi-change change-up">▲ 22.1% vs same period 2025</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📐</div>
+      <div class="kpi-label">Avg Price / sq.ft</div>
+      <div class="kpi-value green">AED 1,847</div>
+      <div class="kpi-sub">Blended city-wide average</div>
+      <div class="kpi-change change-up">▲ 14.7% YoY</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🏠</div>
+      <div class="kpi-label">Avg Transaction Value</div>
+      <div class="kpi-value blue">AED 2.74M</div>
+      <div class="kpi-sub">Per deal — all types</div>
+      <div class="kpi-change change-up">▲ 11.2% YoY</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🏗</div>
+      <div class="kpi-label">Off-Plan Share</div>
+      <div class="kpi-value amber">67.4%</div>
+      <div class="kpi-sub">32.6% Ready / Secondary</div>
+      <div class="kpi-change change-up">▲ 5.2pp vs Q1 2025</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📍</div>
+      <div class="kpi-label">Top Area (Volume)</div>
+      <div class="kpi-value" style="font-size:1.1rem;color:var(--accent-purple)">JVC</div>
+      <div class="kpi-sub">1,842 transactions MTD</div>
+      <div class="kpi-change change-up">▲ 31% vs Mar 2025</div>
+    </div>
+  </div>
+
+  <!-- Chart Row 1: War Comparison + Off-Plan Donut -->
+  <div class="section-header">
+    <div class="section-title">Sales Volume — Pre vs Post Iran War</div>
+    <div class="section-line"></div>
+    <span class="war-label">⚠ Iran War Jun–Aug 2025</span>
+  </div>
+
+  <div class="phase-indicator">
+    <div class="phase-item"><div class="phase-dot" style="background:#3b82f6"></div>Pre-War (Jan 2024 – May 2025)</div>
+    <div class="phase-item"><div class="phase-dot" style="background:#ef4444"></div>War Period (Jun – Aug 2025)</div>
+    <div class="phase-item"><div class="phase-dot" style="background:#10b981"></div>Post-War Surge (Sep 2025 – Present)</div>
+  </div>
+
+  <div class="grid-2-1">
+    <div class="panel panel-glow-blue">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-size:0.78rem;font-weight:700;color:var(--text-primary)">Monthly Transaction Volume</div>
+          <div style="font-size:0.68rem;color:var(--text-secondary)">Jan 2024 – Mar 2026 · DLD Registered Sales</div>
+        </div>
+        <div style="font-size:0.7rem;color:var(--accent-amber);font-weight:600;">Peak: 11,847 (Feb 2026)</div>
+      </div>
+      <div class="chart-container" style="height:260px">
+        <canvas id="warComparisonChart"></canvas>
+      </div>
+    </div>
+    <div class="panel panel-glow-amber">
+      <div style="margin-bottom:14px;">
+        <div style="font-size:0.78rem;font-weight:700;color:var(--text-primary)">Off-Plan vs Ready</div>
+        <div style="font-size:0.68rem;color:var(--text-secondary)">YTD 2026 Split</div>
+      </div>
+      <div class="chart-container" style="height:200px">
+        <canvas id="offPlanDonut"></canvas>
+      </div>
+      <div style="margin-top:14px;display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:10px;height:10px;border-radius:2px;background:var(--accent-blue)"></div>
+            <span style="font-size:0.75rem;color:var(--text-secondary)">Off-Plan</span>
+          </div>
+          <span style="font-size:0.8rem;font-weight:700;color:var(--accent-blue)">67.4% — 16,727</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:10px;height:10px;border-radius:2px;background:var(--accent-amber)"></div>
+            <span style="font-size:0.75rem;color:var(--text-secondary)">Ready / Secondary</span>
+          </div>
+          <span style="font-size:0.8rem;font-weight:700;color:var(--accent-amber)">32.6% — 8,090</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart Row 2: Top Areas + Nationality -->
+  <div class="grid-2">
+    <div class="panel panel-glow-blue section-gap" style="margin-bottom:0">
+      <div class="section-header" style="margin-bottom:14px;">
+        <div class="section-title" style="font-size:0.78rem">Top Areas by Transaction Volume</div>
+        <div class="section-line"></div>
+        <span class="section-tag tag-blue">YTD 2026</span>
+      </div>
+      <div class="chart-container" style="height:280px">
+        <canvas id="topAreasChart"></canvas>
+      </div>
+    </div>
+    <div class="panel panel-glow-amber section-gap" style="margin-bottom:0">
+      <div class="section-header" style="margin-bottom:14px;">
+        <div class="section-title" style="font-size:0.78rem">Nationality of Buyers</div>
+        <div class="section-line"></div>
+        <span class="section-tag tag-amber">YTD 2026</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div class="chart-container" style="height:240px;flex:1;min-width:160px;">
+          <canvas id="nationalityChart"></canvas>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;min-width:130px;">
+          <div class="nationality-legend" id="nationalityLegend"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Price Trend Chart -->
+  <div style="margin-top:16px;" class="section-gap">
+    <div class="panel panel-glow-blue">
+      <div class="section-header" style="margin-bottom:14px;">
+        <div class="section-title" style="font-size:0.78rem">Price Trend by Area (AED / sq.ft)</div>
+        <div class="section-line"></div>
+        <span class="section-tag tag-blue">Last 18 Months · Oct 2024 – Mar 2026</span>
+      </div>
+      <div class="chart-container" style="height:240px">
+        <canvas id="priceTrendChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Developer Activity -->
+  <div class="section-gap">
+    <div class="panel panel-glow-amber">
+      <div class="section-header" style="margin-bottom:14px;">
+        <div class="section-title" style="font-size:0.78rem">Developer Activity — Off-Plan Launches</div>
+        <div class="section-line"></div>
+        <span class="section-tag tag-amber">Top 10 Developers · Units Launched YTD 2026</span>
+      </div>
+      <div class="chart-container" style="height:240px">
+        <canvas id="developerChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Distress Deals Section -->
+  <div class="section-header">
+    <div class="section-title">Distress Deals & Motivated Sellers</div>
+    <div class="section-line"></div>
+    <span class="section-tag tag-red">8 Curated Deals</span>
+    <span class="section-tag tag-amber" style="margin-left:4px;">Live Listings</span>
+  </div>
+
+  <div class="distress-grid">
+
+    <!-- Card 1 -->
+    <div class="distress-card card-distress">
+      <div class="distress-tag tag-distress"><span class="blink">●</span> DISTRESS SALE</div>
+      <div class="dc-prop-type">1-Bedroom Apartment</div>
+      <div class="dc-name">Belgravia Heights I</div>
+      <div class="dc-location">📍 Jumeirah Village Circle (JVC)</div>
+      <div class="dc-prices">
+        <div class="dc-listed">AED 720K</div>
+        <div class="dc-market">AED 895K</div>
+        <div class="dc-discount">-19.6%</div>
+      </div>
+      <div class="dc-specs">
+        <div class="dc-spec">🏠 752 sqft</div>
+        <div class="dc-spec">🛏 1 Bed / 1 Bath</div>
+        <div class="dc-spec">📅 2024 Built</div>
+      </div>
+      <div class="dc-meta">
+        <div class="dc-developer">Dev: <strong>Ellington Properties</strong></div>
+        <div class="dc-payment">60/40 Plan</div>
+      </div>
+      <div class="urgency-bar">
+        <span style="color:var(--accent-red);font-size:0.75rem;">⚡</span>
+        <span class="urgency-text">Seller relocating — must close within 30 days</span>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="distress-card card-motivated">
+      <div class="distress-tag tag-motivated">⚠ MOTIVATED SELLER</div>
+      <div class="dc-prop-type">2-Bedroom Apartment</div>
+      <div class="dc-name">The Distinction Tower</div>
+      <div class="dc-location">📍 Business Bay, Dubai</div>
+      <div class="dc-prices">
+        <div class="dc-listed">AED 1.45M</div>
+        <div class="dc-market">AED 1.78M</div>
+        <div class="dc-discount">-18.5%</div>
+      </div>
+      <div class="dc-specs">
+        <div class="dc-spec">🏠 1,204 sqft</div>
+        <div class="dc-spec">🛏 2 Bed / 2 Bath</div>
+        <div class="dc-spec">🌊 Canal View</div>
+      </div>
+      <div class="dc-meta">
+        <div class="dc-developer">Dev: <strong>Damac Properties</strong></div>
+        <div class="dc-payment">Mortgage Resale</div>
+      </div>
+      <div class="urgency-bar">
+        <span style="color:var(--accent-amber);font-size:0.75rem;">⏰</span>
+        <span class="urgency-text">Seller in financial distress — flexible on price</span>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="distress-card card-below">
+      <div class="distress-tag tag-below-mkt">↓ BELOW MARKET VALUE</div>
+      <div class="dc-prop-type">Studio Apartment</div>
+      <div class="dc-name">Oxford Terraces</div>
+      <div class="dc-location">📍 Jumeirah Village Circle (JVC)</div>
+      <div class="dc-prices">
+        <div class="dc-listed">AED 452K</div>
+        <div class="dc-market">AED 545K</div>
+        <div class="dc-discount">-17.1%</div>
+      </div>
+      <div class="dc-specs">
+        <div class="dc-spec">🏠 421 sqft</div>
+        <div class="dc-spec">🛏 Studio / 1 Bath</div>
+        <div class="dc-spec">🏊 Pool Access</div>
+      </div>
+      <div class="dc-meta">
+        <div class="dc-developer">Dev: <strong>Aqua Properties</strong></div>
+        <div class="dc-payment">Full Cash Only</div>
+      </div>
+      <div class="urgency-bar">
+        <span style="color:var(--accent-purple);font-size:0.75rem;">📉</span>
+        <span class="urgency-text">Owner emigrating — priced to sell fast</span>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="distress-card card-distress">
+      <div class="distress-tag tag-distress"><span class="blink">●</span> DISTRESS SALE</div>
+      <div class="dc-prop-type">3-Bedroom Villa</div>
+      <div class="dc-name">DAMAC Hills Cluster</div>
+      <div class="dc-location">📍 Dubai South / DAMAC Hills</div>
+      <div class="dc-prices">
+        <div class="dc-listed">AED 2.85M</div>
+        <div class="dc-market">AED 3.48M</div>
+        <div class="dc-discount">-18.1%</div>
+      </div>
+      <div class="dc-specs">
+        <div class="dc-spec">🏠 2,840 sqft</div>
+        <div class="dc-spec">🛏 3 Bed / 4 Bath</div>
+        <div class="dc-spec">🌿 Private Garden</div>
+      </div>
+      <div class="dc-meta">
+        <div class="dc-developer">Dev: <strong>Damac Properties</strong></div>
+        <div class="dc-payment">Bank Mortgage OK</div>
+      </div>
+      <div class="urgency-bar">
+        <span style="color:var(--accent-red);font-size:0.75rem;">⚡</span>
+        <span class="urgency-text">Divorce settlement — urgent sale required</span>
+      </div>
+    </div>
+
+    <!-- Card 5 -->
+    <div class="distress-card card-motivated">
+      <div class="distress-tag tag-motivated">⚠ MOTIVATED SELLER</div>
+      <div class="dc-prop-type">1-Bedroom Apartment</div>
+      <div class="dc-name">International City Phase 2</div>
+      <div class="dc-location">📍 International City, Dragon Mart</div>
+      <div class="dc-prices">
+        <div class="dc-listed">AED 468K</div>
+        <div class="dc-market">AED 560K</div>
+        <div class="dc-discount">-16.4%</div>
+      </div>
+      <div class="dc-specs">
+        <div class="dc-spec">🏠 688 sqft</div>
+        <div class="dc-spec">🛏 1 Bed / 1 Bath</div>
+        <div class="dc-spec">🚌 Metro Link</div>
+      </div>
+      <div class="dc-meta">
+        <div class="dc-developer">Dev: <strong>Nakheel</strong></div>
+        <div class="dc-payment">75% LTV Available</div>
+      </div>
+      <div class="urgency-bar">
+        <span style="color:var(--accent-amber);font-size:0.75rem;">⏰</span>
+        <span class="urgency-text">Investor exiting market — 3 units available</span>
+      </div>
+    </div>
+
+    <!-- Card 6 -->
+    <div class="distress-card card-below">
+      <div class="distress-tag tag-below-mkt">↓ BELOW MARKET VALUE</div>
+      <div class="dc-prop-type">2-Bedroom Apartment</div>
+      <div class="dc-name">Sportz by Danube</div>
+      <div class="dc-location">📍 Dubai Sports City</div>
+      <div class="dc-prices">
+        <div class="dc-listed">AED 980K</div>
+        <div class="dc-market">AED 1.19M</div>
+        <div class="dc-discount">-17.6%</div>
+      </div>
+      <div class="dc-specs">
+        <div class="dc-spec">🏠 1,085 sqft</div>
+        <div class="dc-spec">🛏 2 Bed / 2 Bath</div>
+        <div class="dc-spec">⚽ Sports Facilities</div>
+      </div>
+      <div class="dc-meta">
+        <div class="dc-developer">Dev: <strong>Danube Properties</strong></div>
+        <div class="dc-payment">1% Monthly Plan</div>
+      </div>
+      <div class="urgency-bar">
+        <span style="color:var(--accent-purple);font-size:0.75rem;">📉</span>
+        <span class="urgency-text">Developer resale — handover completed, needs exit</span>
+      </div>
+    </div>
+
+    <!-- Card 7 -->
+    <div class="distress-card card-distress">
+      <div class="distress-tag tag-distress"><span class="blink">●</span> DISTRESS SALE</div>
+      <div class="dc-prop-type">1-Bedroom Apartment</div>
+      <div class="dc-name">Discovery Gardens — Zen</div>
+      <div class="dc-location">📍 Discovery Gardens, Jebel Ali</div>
+      <div class="dc-prices">
+        <div class="dc-listed">AED 575K</div>
+        <div class="dc-market">AED 698K</div>
+        <div class="dc-discount">-17.6%</div>
+      </div>
+      <div class="dc-specs">
+        <div class="dc-spec">🏠 812 sqft</div>
+        <div class="dc-spec">🛏 1 Bed / 1 Bath</div>
+        <div class="dc-spec">🌳 Garden View</div>
+      </div>
+      <div class="dc-meta">
+        <div class="dc-developer">Dev: <strong>Nakheel</strong></div>
+        <div class="dc-payment">Cash + Mortgage</div>
+      </div>
+      <div class="urgency-bar">
+        <span style="color:var(--accent-red);font-size:0.75rem;">⚡</span>
+        <span class="urgency-text">Expat returning home — 45-day closing</span>
+      </div>
+    </div>
+
+    <!-- Card 8 -->
+    <div class="distress-card card-motivated">
+      <div class="distress-tag tag-motivated">⚠ MOTIVATED SELLER</div>
+      <div class="dc-prop-type">4-Bedroom Villa</div>
+      <div class="dc-name">Emaar South Golf Views</div>
+      <div class="dc-location">📍 Dubai South, Emaar South</div>
+      <div class="dc-prices">
+        <div class="dc-listed">AED 3.35M</div>
+        <div class="dc-market">AED 3.98M</div>
+        <div class="dc-discount">-15.8%</div>
+      </div>
+      <div class="dc-specs">
+        <div class="dc-spec">🏠 3,640 sqft</div>
+        <div class="dc-spec">🛏 4 Bed / 5 Bath</div>
+        <div class="dc-spec">⛳ Golf Course View</div>
+      </div>
+      <div class="dc-meta">
+        <div class="dc-developer">Dev: <strong>Emaar Properties</strong></div>
+        <div class="dc-payment">70/30 Post-Handover</div>
+      </div>
+      <div class="urgency-bar">
+        <span style="color:var(--accent-amber);font-size:0.75rem;">⏰</span>
+        <span class="urgency-text">Business liquidation — registered with DLD</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Data sources -->
+  <div class="data-sources" style="margin-bottom:24px">
+    <span class="data-source-label">Data Sources:</span>
+    <span class="ds-badge ds-dld">DLD</span>
+    <span class="ds-badge ds-dxb">DXB Interact</span>
+    <span class="ds-badge ds-bayut">Bayut</span>
+    <span class="ds-badge ds-pf">Property Finder</span>
+    <span class="ds-badge ds-reidin">REIDIN</span>
+  </div>
+
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-text">
+      <strong>Dubai RE Intelligence Dashboard</strong> — Last updated: <strong>March 2026</strong> · Data sourced from DLD, DXB Interact, Bayut, Property Finder & REIDIN. For informational purposes only.
+    </div>
+    <div class="data-sources">
+      <span class="ds-badge ds-dld">DLD</span>
+      <span class="ds-badge ds-dxb">DXB Interact</span>
+      <span class="ds-badge ds-bayut">Bayut</span>
+      <span class="ds-badge ds-pf">Property Finder</span>
+      <span class="ds-badge ds-reidin">REIDIN</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── Chart Defaults ──────────────────────────────────────────────────────────
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.borderColor = 'rgba(59,130,246,0.1)';
+Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+
+const BLUE = '#3b82f6';
+const AMBER = '#f59e0b';
+const GREEN = '#10b981';
+const RED = '#ef4444';
+const PURPLE = '#8b5cf6';
+const CYAN = '#06b6d4';
+
+// ── 1. War Comparison Bar/Line Chart ────────────────────────────────────────
+(function() {
+  const labels = [
+    'Jan 24','Feb 24','Mar 24','Apr 24','May 24','Jun 24',
+    'Jul 24','Aug 24','Sep 24','Oct 24','Nov 24','Dec 24',
+    'Jan 25','Feb 25','Mar 25','Apr 25','May 25','Jun 25',
+    'Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25',
+    'Jan 26','Feb 26','Mar 26'
+  ];
+
+  // Pre-war: steady climb; War (Jun-Aug 25): dip; Post-war: surge
+  const volumes = [
+    5840, 6210, 6780, 6420, 6950, 7210,   // 2024 H1
+    6890, 6540, 7120, 7480, 7840, 8320,   // 2024 H2 (Dec peak holiday)
+    7650, 8140, 8470, 8820, 9100, 7240,   // 2025 H1 → Jun drops (war starts)
+    5890, 5310, 8940, 9620, 10240, 11240, // Jul-Aug trough, Sep surge
+    10840, 11847, 9247                     // 2026 (Jan, Feb peak, Mar MTD)
+  ];
+
+  // Color bars: blue=pre-war, red=war, green=post-war
+  const bgColors = volumes.map((_, i) => {
+    if (i >= 17 && i <= 19) return 'rgba(239,68,68,0.75)'; // Jun-Aug 25 war
+    if (i >= 20) return 'rgba(16,185,129,0.75)';             // post-war
+    return 'rgba(59,130,246,0.65)';                           // pre-war
+  });
+  const borderColors = volumes.map((_, i) => {
+    if (i >= 17 && i <= 19) return RED;
+    if (i >= 20) return GREEN;
+    return BLUE;
+  });
+
+  // 3-month rolling average line
+  const avgLine = volumes.map((_, i, arr) => {
+    if (i < 2) return null;
+    return Math.round((arr[i] + arr[i-1] + arr[i-2]) / 3);
+  });
+
+  const ctx = document.getElementById('warComparisonChart').getContext('2d');
+
+  // Annotation plugin for war zone
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          type: 'bar',
+          label: 'Monthly Transactions',
+          data: volumes,
+          backgroundColor: bgColors,
+          borderColor: borderColors,
+          borderWidth: 1,
+          borderRadius: 3,
+          order: 2
+        },
+        {
+          type: 'line',
+          label: '3-Month Avg',
+          data: avgLine,
+          borderColor: AMBER,
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.4,
+          fill: false,
+          order: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          display: true,
+          labels: { boxWidth: 12, font: { size: 11 }, padding: 12 }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(26,26,46,0.95)',
+          borderColor: 'rgba(59,130,246,0.3)',
+          borderWidth: 1,
+          padding: 10,
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y?.toLocaleString() ?? 'N/A'}`
+          }
+        },
+        annotation: {
+          annotations: {
+            warZone: {
+              type: 'box',
+              xMin: 16.5,
+              xMax: 19.5,
+              backgroundColor: 'rgba(239,68,68,0.07)',
+              borderColor: 'rgba(239,68,68,0.3)',
+              borderWidth: 1,
+              label: {
+                display: true,
+                content: ['⚠ IRAN WAR', 'Jun–Aug 2025'],
+                color: '#ef4444',
+                font: { size: 10, weight: 'bold' },
+                position: { x: 'center', y: 'start' },
+                yAdjust: 8
+              }
+            },
+            surgeArrow: {
+              type: 'label',
+              xValue: 22,
+              yValue: 11000,
+              content: ['▲ Capital', 'Flight Surge'],
+              color: GREEN,
+              font: { size: 9, weight: 'bold' }
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(59,130,246,0.05)' },
+          ticks: { font: { size: 9 }, maxRotation: 45 }
+        },
+        y: {
+          grid: { color: 'rgba(59,130,246,0.07)' },
+          ticks: {
+            font: { size: 10 },
+            callback: v => v.toLocaleString()
+          },
+          title: { display: true, text: 'Transactions', font: { size: 10 } }
+        }
+      }
+    }
+  });
+})();
+
+// ── 2. Off-Plan Donut ────────────────────────────────────────────────────────
+(function() {
+  const ctx = document.getElementById('offPlanDonut').getContext('2d');
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Off-Plan', 'Ready / Secondary'],
+      datasets: [{
+        data: [67.4, 32.6],
+        backgroundColor: [
+          'rgba(59,130,246,0.85)',
+          'rgba(245,158,11,0.85)'
+        ],
+        borderColor: ['#3b82f6', '#f59e0b'],
+        borderWidth: 2,
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '72%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(26,26,46,0.95)',
+          borderColor: 'rgba(59,130,246,0.3)',
+          borderWidth: 1,
+          callbacks: {
+            label: ctx => ` ${ctx.label}: ${ctx.parsed}%`
+          }
+        }
+      }
+    },
+    plugins: [{
+      id: 'centerText',
+      beforeDraw(chart) {
+        const { width, height, ctx } = chart;
+        ctx.save();
+        ctx.font = `bold ${width / 7}px Segoe UI`;
+        ctx.fillStyle = '#3b82f6';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('67.4%', width / 2, height / 2 - 8);
+        ctx.font = `${width / 15}px Segoe UI`;
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText('Off-Plan', width / 2, height / 2 + 16);
+        ctx.restore();
+      }
+    }]
+  });
+})();
+
+// ── 3. Top Areas Horizontal Bar ──────────────────────────────────────────────
+(function() {
+  const areas = [
+    'JVC','Business Bay','Dubai Marina','Downtown Dubai',
+    'MBR City','Arjan','Dubai South','Palm Jumeirah',
+    'JBR','Arabian Ranches'
+  ];
+  const values = [7840, 6920, 5870, 5240, 4980, 4210, 3870, 3540, 3120, 2840];
+  const colors = values.map((v, i) => {
+    const opacity = 0.85 - i * 0.04;
+    return `rgba(59,130,246,${opacity})`;
+  });
+
+  const ctx = document.getElementById('topAreasChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: areas,
+      datasets: [{
+        label: 'Transactions YTD 2026',
+        data: values,
+        backgroundColor: colors,
+        borderColor: BLUE,
+        borderWidth: 1,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(26,26,46,0.95)',
+          borderColor: 'rgba(59,130,246,0.3)',
+          borderWidth: 1,
+          callbacks: {
+            label: ctx => ` ${ctx.parsed.x.toLocaleString()} transactions`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(59,130,246,0.07)' },
+          ticks: { font: { size: 10 }, callback: v => v.toLocaleString() }
+        },
+        y: {
+          grid: { display: false },
+          ticks: { font: { size: 11 } }
+        }
+      }
+    }
+  });
+})();
+
+// ── 4. Nationality Pie ────────────────────────────────────────────────────────
+(function() {
+  const nationalities = ['Indians','Russians','British','Chinese','Pakistanis','UAE Nationals','Others'];
+  const values = [28.4, 14.7, 9.2, 8.1, 7.3, 11.2, 21.1];
+  const colors = [BLUE, RED, '#f97316', CYAN, GREEN, AMBER, PURPLE];
+
+  const ctx = document.getElementById('nationalityChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: nationalities,
+      datasets: [{
+        data: values,
+        backgroundColor: colors.map(c => c + 'cc'),
+        borderColor: colors,
+        borderWidth: 2,
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(26,26,46,0.95)',
+          borderColor: 'rgba(59,130,246,0.3)',
+          borderWidth: 1,
+          callbacks: {
+            label: ctx => ` ${ctx.label}: ${ctx.parsed}%`
+          }
+        }
+      }
+    }
+  });
+
+  // Build legend
+  const legend = document.getElementById('nationalityLegend');
+  nationalities.forEach((n, i) => {
+    const item = document.createElement('div');
+    item.style.cssText = 'display:flex;align-items:center;gap:7px;margin-bottom:5px;';
+    item.innerHTML = `
+      <div style="width:9px;height:9px;border-radius:2px;background:${colors[i]};flex-shrink:0"></div>
+      <span style="font-size:0.72rem;color:#94a3b8;flex:1">${n}</span>
+      <span style="font-size:0.75rem;font-weight:700;color:#f1f5f9">${values[i]}%</span>
+    `;
+    legend.appendChild(item);
+  });
+})();
+
+// ── 5. Price Trend Line Chart ────────────────────────────────────────────────
+(function() {
+  // 18 months: Oct 2024 – Mar 2026
+  const labels = [
+    'Oct 24','Nov 24','Dec 24','Jan 25','Feb 25','Mar 25',
+    'Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25',
+    'Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26'
+  ];
+
+  const datasets = [
+    {
+      label: 'Dubai Marina',
+      data: [2420, 2455, 2480, 2510, 2545, 2580, 2615, 2648, 2590, 2520, 2490, 2680, 2740, 2790, 2810, 2825, 2840, 2847],
+      borderColor: BLUE,
+      backgroundColor: 'rgba(59,130,246,0.08)',
+      fill: false
+    },
+    {
+      label: 'Downtown Dubai',
+      data: [2840, 2890, 2920, 2970, 3010, 3055, 3090, 3140, 3070, 2980, 2940, 3180, 3240, 3290, 3340, 3370, 3400, 3412],
+      borderColor: AMBER,
+      backgroundColor: 'rgba(245,158,11,0.08)',
+      fill: false
+    },
+    {
+      label: 'Business Bay',
+      data: [1780, 1810, 1840, 1870, 1895, 1920, 1950, 1980, 1940, 1870, 1840, 2010, 2060, 2110, 2155, 2190, 2220, 2241],
+      borderColor: GREEN,
+      backgroundColor: 'rgba(16,185,129,0.08)',
+      fill: false
+    },
+    {
+      label: 'JVC',
+      data: [880, 902, 918, 935, 955, 972, 994, 1015, 984, 958, 948, 1042, 1075, 1102, 1128, 1152, 1172, 1187],
+      borderColor: PURPLE,
+      backgroundColor: 'rgba(139,92,246,0.08)',
+      fill: false
+    }
+  ];
+
+  const ctx = document.getElementById('priceTrendChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: datasets.map(d => ({ ...d, borderWidth: 2, pointRadius: 3, pointHoverRadius: 6, tension: 0.4 })) },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          display: true,
+          labels: { boxWidth: 12, font: { size: 11 }, padding: 14 }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(26,26,46,0.95)',
+          borderColor: 'rgba(59,130,246,0.3)',
+          borderWidth: 1,
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: AED ${ctx.parsed.y.toLocaleString()}/sqft`
+          }
+        },
+        annotation: {
+          annotations: {
+            warPeriod: {
+              type: 'box',
+              xMin: 7.5,
+              xMax: 10.5,
+              backgroundColor: 'rgba(239,68,68,0.05)',
+              borderColor: 'rgba(239,68,68,0.25)',
+              borderWidth: 1,
+              label: {
+                display: true,
+                content: 'War Dip',
+                color: RED,
+                font: { size: 9, weight: 'bold' },
+                position: { x: 'center', y: 'start' },
+                yAdjust: 6
+              }
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(59,130,246,0.05)' },
+          ticks: { font: { size: 10 } }
+        },
+        y: {
+          grid: { color: 'rgba(59,130,246,0.07)' },
+          ticks: {
+            font: { size: 10 },
+            callback: v => 'AED ' + v.toLocaleString()
+          },
+          title: { display: true, text: 'AED / sq.ft', font: { size: 10 } }
+        }
+      }
+    }
+  });
+})();
+
+// ── 6. Developer Stacked Bar ─────────────────────────────────────────────────
+(function() {
+  const developers = ['Emaar','Damac','Sobha','Nakheel','Aldar','Binghatti','Ellington','Meraas','Select Group','Tiger'];
+
+  // Q1, Q2, Q3 launches YTD 2026 (stacked)
+  const q1 = [3840, 2940, 1850, 2120, 1640, 1980, 1240, 1180, 980, 1420];
+  const q2 = [3210, 2580, 1640, 1870, 1420, 1760, 1080, 1020, 840, 1240];
+  const q3 = [2840, 2240, 1420, 1640, 1240, 1520, 940, 880, 720, 1080];
+
+  const ctx = document.getElementById('developerChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: developers,
+      datasets: [
+        {
+          label: 'Residential Apt',
+          data: q1,
+          backgroundColor: 'rgba(59,130,246,0.75)',
+          borderColor: BLUE, borderWidth: 1, borderRadius: { topLeft: 0, topRight: 0 }
+        },
+        {
+          label: 'Villas / TH',
+          data: q2,
+          backgroundColor: 'rgba(245,158,11,0.75)',
+          borderColor: AMBER, borderWidth: 1
+        },
+        {
+          label: 'Commercial / Mixed',
+          data: q3,
+          backgroundColor: 'rgba(139,92,246,0.75)',
+          borderColor: PURPLE, borderWidth: 1, borderRadius: { topLeft: 4, topRight: 4 }
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { boxWidth: 12, font: { size: 11 }, padding: 12 } },
+        tooltip: {
+          backgroundColor: 'rgba(26,26,46,0.95)',
+          borderColor: 'rgba(59,130,246,0.3)',
+          borderWidth: 1,
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()} units`
+          }
+        }
+      },
+      scales: {
+        x: {
+          stacked: true,
+          grid: { display: false },
+          ticks: { font: { size: 10 } }
+        },
+        y: {
+          stacked: true,
+          grid: { color: 'rgba(59,130,246,0.07)' },
+          ticks: {
+            font: { size: 10 },
+            callback: v => v.toLocaleString()
+          },
+          title: { display: true, text: 'Units Launched', font: { size: 10 } }
+        }
+      }
+    }
+  });
+})();
+
+// ── Animate KPI counters ─────────────────────────────────────────────────────
+function animateCounter(el, target, prefix='', suffix='', decimals=0) {
+  const duration = 1800;
+  const start = performance.now();
+  function update(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    const current = target * ease;
+    el.textContent = prefix + (decimals > 0 ? current.toFixed(decimals) : Math.round(current).toLocaleString()) + suffix;
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+</script>
+</body>
+</html>
